@@ -55,4 +55,4 @@ It would also require message routing by the blocks themselves by implementing e
     - GND
     - UART TX
     - UART RX
-  - See [PDF]() 
+  - See [PDF](https://github.com/davirieser/BlocklyMorph/blob/dd45b4aaba8524e23da5adf29cdbead551775158/TeX/build/default/default.pdf) 
