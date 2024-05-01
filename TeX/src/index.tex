@@ -1,0 +1,104 @@
+
+\iffalse
+
+  \begin{titlepage}
+      \begin{center}
+          \vspace*{1cm}
+
+          \textbf{BlocklyMorph}
+
+          \vspace{0.5cm}
+          \vspace{1.5cm}
+
+          \textbf{David Rieser}
+      \end{center}
+  \end{titlepage}
+
+  \pagebreak
+
+  \tableofcontents
+  \pagebreak
+
+\fi
+
+\section{Communication Protocol}
+
+Communication occurs over a multiplexed UART interface.\\
+In the following, each side of a block that can be connected to, will be called "port".\\
+The amount of ports of a block will be denoted as $P$.\\
+The communication can be extended to arbritarly many ports.
+
+\subsection{Pinout}
+
+The following are the required pins on the microcontroller side:
+\begin{itemize}
+    \item UART RX and TX
+    \item $\lceil ld(P)\rceil$ Pins for selecting which port is active
+    \item $P$ Pins for Interrupts
+\end{itemize}
+
+The following are the required pins between the blocks:
+\begin{itemize}
+    \item VCC
+    \item GND
+    \item UART TX
+    \item UART RX
+\end{itemize}
+
+\subsection{Communication Process}
+
+For the following section the TX and RX of the microcontroller and block connection will be qualified by "uC" for the microcontroller and "bc" for the block connection respectively.\\
+At any given time one of the ports will be selected (excluding during port selection transitions).\\
+The selected port will have it's bc\_TX connected to uC\_RX and bc\_RX to uC\_TX thus enabling full-duplex communication.\\ \\
+For the ports that are not selected the following configuration is used:\\
+The bc\_RX line will be pulled to high to indicate to the other block that a block is connected.\\
+At the same time a floating detector is used on the bc\_TX line to check if a block is connected.\\
+The interrupt pin will be configured with a falling edge interrupt.\\
+If you have data to send to the another block you set the given block to the active port and send a connection request frame.\\
+Then you set a timer for 1ms during which you wait for a UART response frame.\\
+If the other block does not respond before the timer runs out, you can move on to a different block or retry the current block.\\
+(This should probably done with SYN -> ACK -> SYN-ACK where if the timer runs out you restart with SYN)\\
+Here we have to make a case distinction:
+\begin{itemize}
+  \item If the other block has this port as the selected port:\\
+    It will immidiately get the frame and communication can start immidiately.
+  \item If the other block does not have this port as the selected port its RX will be connected to the interrupt pin.\\ 
+    The UART start bit of the frame will pull the pin low and trigger a falling edge interrupt on the other block.\\
+    If the other block is currently idle it will then change its selected port to the port where the frame was sent.\\
+    If the other block is currently communicating with another block, it will finish this communication with this block and then reinitiate the communication with the block that sent the request.
+  \item If the block is currently changing the selected port from this block to another block, it will miss the communication request.\\
+    This will be caught by the timer reinitiating the request after some time.
+\end{itemize}
+
+\pagebreak
+
+\subsection{Circuit Design}
+
+I did create a circuit design on paper but was not able to convert it into LaTeX Code yet.\\
+\\
+\noindent First you need a 4-1 Demultiplexer for selecting which port to use (the port select signals) using two ports of the microcontroller OS1 and OS2 as the control signals and VCC as the input signal.\\
+Then you need a transistor whose base is connected to uc\_TX the port select signal, collector to uc\_TX and emitter bc\_RX with a pull-up resistor.\\
+A Demultiplexer input is connected to bc\_TX and it's control line is connected to the port select signal.\\
+The first output of the Demultiplexer is connected to uc\_RX with a pull-up resistor.\\
+Then you need to connect one 100k resistor from VCC to bc\_TX and one 100k resistor from bc\_TX to GND.\\
+Then a window comparator is connected to bc\_TX with a window of 2.3V to 2.7V.\\
+The second output of the Demultiplexer and the output of the window comparator is connected to the inputs of an AND-Gate and then connected to the interrupt pin.
+
+\iffalse
+\begin{figure}[!ht]
+    \centering
+    \begin{circuitikz}
+    \end{circuitikz}
+
+    \label{circ:UART_Multiplexing}
+\end{figure}
+\fi
+
+\subsection{Problems}
+
+\begin{itemize}
+  \item How do we make sure that the window comparator does not oscillate during transmission? 
+      If the selected board is disconnected during transmission we would like to know.\\
+  \item How do we ensure that the RX and TX lines are crossed in the board connectors?
+\end{itemize}
+
