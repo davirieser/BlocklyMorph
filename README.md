@@ -32,27 +32,25 @@ Another problem is that SPI all variations of the bus topology do not work for h
 - Daisy chain configurations cannot ever work since the chain of MISO/MOSI chain cannot be broken.
   One would have to bridge across ports that are not connected, but still enable them to connect using some other way.
 
-## Problems with peer-to-peer communication
+#### Other Options 
 
-The problem with peer-to-peer communication is that it would require one standardized communication interface (probably UART) per port of the block.
-It would also require message routing by the blocks themselves by implementing either:
-- a routing protocol similar to OSPF (which I have already implemented in a different project)
-- predetermining the complete route in the base block
+I2C, SPI and UART are the most widespread communication options on microcontrollers.
+Since I2C and SPI are both out, this leaves only peer-to-peer communication using UART.
 
-#### Communication Options for peer-to-peer
-
-- Parallel port-based
-  - 4 pins
-    - VCC
-    - GND
-    - UART TX
-    - UART RX
+Here I could only find two distinct variants for communication:
+- Parallelism
   - All ports are connected to seperate hardware UART's.
-  - This is the easiest way but has higher hardware requirements that are in sleep mode for most of the time.
-- Interrupt based Multiplexing
-  - 4 pins
-    - VCC
-    - GND
-    - UART TX
-    - UART RX
+  - This is the easiest way but has significantly higher hardware requirements which are not required as the boards will be in sleep mode for most of the time.
+- Time sliced 
+  - Only one hardware UART needed for an arbitrary amount of ports.
+  - Every block has only one port at a time whose communication lines are actually connected to the hardware UART. 
+    Two devices need to synchronize their active ports to start communication. 
+    This active port can be switched to another port when communication is finished.
+  - This variant is also compatible with the other case if the device with the parallel ports stores messages until they are acknowledged.
+    - The non-active ports pull the sending line to high as this is the default state for UART and when they want to communicate they pull the line low which corresponds to the UART start bit.
+  - Slightly higher hardware requirements: 1 Demultiplexer in general and 1 resistors, 1 window comparator, 2 transistors, 1 pin more per port.
   - See [PDF](https://github.com/davirieser/BlocklyMorph/blob/dd45b4aaba8524e23da5adf29cdbead551775158/TeX/build/default/default.pdf) 
+
+The first variant could detect whether a block is connected to one of it's port using periodic discovery requests.
+But it could also use a window comparator for detecting this which would reduce the computational load of the microcontroller and make it asynchronous. 
+
