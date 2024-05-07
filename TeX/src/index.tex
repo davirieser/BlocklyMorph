@@ -74,15 +74,7 @@ Here we have to make a case distinction:
 
 \subsection{Circuit Design}
 
-I did create a circuit design on paper but was not able to convert it into LaTeX Code yet.\\
-\\
-\noindent First you need a 4-1 Demultiplexer for selecting which port to use (the port select signals) using two ports of the microcontroller OS1 and OS2 as the control signals and VCC as the input signal.\\
-Then you need a transistor whose base is connected to uc\_TX the port select signal, collector to uc\_TX and emitter bc\_RX with a pull-up resistor.\\
-A Demultiplexer input is connected to bc\_TX and it's control line is connected to the port select signal.\\
-The first output of the Demultiplexer is connected to uc\_RX with a pull-up resistor.\\
-Then you need to connect one 100k resistor from VCC to bc\_TX and one 100k resistor from bc\_TX to GND.\\
-Then a window comparator is connected to bc\_TX with a window of 2.3V to 2.7V.\\
-The second output of the Demultiplexer and the output of the window comparator is connected to the inputs of an AND-Gate and then connected to the interrupt pin.
+I did create a circuit design on paper but was not able to convert it into LaTeX Code yet.
 
 \iffalse
 \begin{figure}[!ht]
@@ -93,12 +85,4 @@ The second output of the Demultiplexer and the output of the window comparator i
     \label{circ:UART_Multiplexing}
 \end{figure}
 \fi
-
-\subsection{Problems}
-
-\begin{itemize}
-  \item How do we make sure that the window comparator does not oscillate during transmission? 
-      If the selected board is disconnected during transmission we would like to know.\\
-  \item How do we ensure that the RX and TX lines are crossed in the board connectors?
-\end{itemize}
 
