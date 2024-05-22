@@ -1,7 +1,22 @@
 
-For the following the word "port" refers to a connector of the plugin board, not to a controller pin.
+## Idea for 2 Student Bachelor Thesis
+
+Areas of responsibility:
+- Shared:
+  - Creating the Block Shematics and
+- Area 1:
+  - System for programming the Blocks.
+    - Each block broadcasts it's capabilities to the master e.g. I have a button and a LCD.
+    - Using these capabilities the user can create programs using a simple DSL.
+    - Like systems programming to some extend but without the address searching.
+    - The DSL should also have "Delta Updates" by converting the program into a dependency tree and only recalculating values that are needed.
+- Area 2:
+  - Communication Protocol between the Blocks.
+  - Connection to Blockly/makecode/etc.
 
 ## Problems with shared bus communication
+
+For the following section the word "port" refers to a connector of the plugin board, not to a controller pin.
 
 Both I2C and SPI, that should theoretically suit this project because of their shared bus architecture, have fundamental issues when trying to incorporate them.
 
