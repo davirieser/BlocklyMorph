@@ -12,8 +12,8 @@ For each component, speed and low power should be considered as the most importa
   - 1 per port.
 - [Magnetic Pogo Connectors](https://www.alibaba.com/product-detail/Convenient-charging-connector-Magnetic-Pogo-Pin_1600656938123.html?spm=a2700.galleryofferlist.normal_offer.d_title.39c02de6yGUCsz) 
   - 1 per port.
-- Multiplexer: [SN74HCS153](https://www.ti.com/product/SN74HCS153)
-  - 1 per 4 ports.
+- Multiplexer: [SN74HCS151](https://www.ti.com/product/SN74HCS151)
+  - 1 per 8 ports.
 - Demultiplexer: [SN74LVC1G139](https://www.ti.com/product/SN74LVC1G139)
   - 1 per 4 ports.
 - Transistors:
