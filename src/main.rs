@@ -1,8 +1,9 @@
+#![allow(unused)]
 
 pub mod comm;
-use comm::{Serializer, Deserializer};
+use comm::{Deserializer, Serializer};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 type NodeId = u32;
 type NodePort = String;
@@ -66,7 +67,7 @@ pub enum Payload {
 pub struct Node {
     id: NodeId,
     status: NodeStatus,
-    // Used for keeping track of the vector clock 
+    // Used for keeping track of the vector clock
     sync_status: SyncStatus,
     ports: Vec<NodePort>,
 }
@@ -131,4 +132,3 @@ fn main() {
 fn main() {
     println!("Hello from outer block!");
 }
-

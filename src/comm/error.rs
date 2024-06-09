@@ -1,4 +1,3 @@
-
 use std;
 use std::fmt::{self, Display};
 
@@ -17,7 +16,9 @@ pub enum Error {
     // Mutex<T> might return an error because the mutex is poisoned, or the
     // Deserialize impl for a struct may return an error because a required
     // field is missing.
-    Message(String),
+    SerdeError(String),
+
+    Message(&'static str),
 
     // Zero or more variants that can be created directly by the Serializer and
     // Deserializer without going through `ser::Error` and `de::Error`. These
@@ -26,6 +27,9 @@ pub enum Error {
     Syntax,
     ExpectedBoolean,
     ExpectedInteger,
+    ExpectedUnsignedInteger,
+    ExpectedDouble,
+    ExpectedChar,
     ExpectedString,
     ExpectedNull,
     ExpectedArray,
@@ -37,17 +41,18 @@ pub enum Error {
     ExpectedMapEnd,
     ExpectedEnum,
     TrailingCharacters,
+    MissingDelimiter,
 }
 
 impl ser::Error for Error {
     fn custom<T: Display>(msg: T) -> Self {
-        Error::Message(msg.to_string())
+        Error::SerdeError(msg.to_string())
     }
 }
 
 impl de::Error for Error {
     fn custom<T: Display>(msg: T) -> Self {
-        Error::Message(msg.to_string())
+        Error::SerdeError(msg.to_string())
     }
 }
 
@@ -56,10 +61,9 @@ impl Display for Error {
         match self {
             Error::Message(msg) => formatter.write_str(msg),
             Error::Eof => formatter.write_str("unexpected end of input"),
-            _ => write!(formatter, "{:?}", self)
+            _ => write!(formatter, "{:?}", self),
         }
     }
 }
 
 impl std::error::Error for Error {}
-
