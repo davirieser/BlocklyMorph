@@ -15,14 +15,14 @@ macro_rules! check_delimiters {
         if !$self.input.starts_with($first_byte) {
             return Err($err_code);
         } else {
-            $self.input = &$self.input[1..];
+            $self.input = &$self.input[$first_byte.len_utf8()..];
         }
     };
     ($self: ident, $first_byte:expr => $err_code: expr, $parse_fn: expr) => {{
         if !$self.input.starts_with($first_byte) {
             return Err($err_code);
         } else {
-            $self.input = &$self.input[1..];
+            $self.input = &$self.input[$first_byte.len_utf8()..];
         }
 
         let value = $parse_fn;
@@ -30,7 +30,7 @@ macro_rules! check_delimiters {
         if !$self.input.starts_with(DELIMITER_CHAR) {
             Err(Error::MissingDelimiter)
         } else {
-            $self.input = &$self.input[1..];
+            $self.input = &$self.input[DELIMITER_CHAR.len_utf8()..];
             Ok(value)
         }
     }};
@@ -98,6 +98,9 @@ impl<'de> Deserializer<'de> {
         )
     }
 
+    /// Parses a Length value starting from the current char.
+    /// Length ends when `DELIMITER_CHAR` is encountered.
+    /// When this function returns the first character in the buffer will be the `DELIMITER_CHAR`.
     // See: https://redis.io/docs/latest/develop/reference/protocol-spec/#high-performance-parser-for-the-redis-protocol
     fn parse_length<T>(&mut self) -> Result<T>
     where
@@ -113,7 +116,7 @@ impl<'de> Deserializer<'de> {
                 }
                 Some(c @ '0'..='9') => {
                     len = (len * T::from(10)) + (T::from(c as u8) - T::from(b'0'));
-                    self.input = &self.input[1..];
+                    self.input = &self.input[c.len_utf8()..];
                 }
                 _ => return Err(Error::ExpectedUnsignedInteger),
             }
@@ -144,19 +147,19 @@ impl<'de> Deserializer<'de> {
         let negate = self.input.starts_with('-');
 
         if negate {
-            self.input = &self.input[1..];
+            self.input = &self.input['-'.len_utf8()..];
         }
 
         loop {
             match self.input.chars().next() {
                 None => return Err(Error::Eof),
                 Some(DELIMITER_CHAR) => {
-                    self.input = &self.input[1..];
+                    self.input = &self.input[DELIMITER_CHAR.len_utf8()..];
                     return Ok(len * (if negate { T::from(-1) } else { T::from(1) }));
                 }
                 Some(c @ '0'..='9') => {
                     len = (len * T::from(10)) + (T::from(c as i8) - T::from('0' as i8));
-                    self.input = &self.input[1..];
+                    self.input = &self.input[c.len_utf8()..];
                 }
                 _ => return Err(Error::ExpectedInteger),
             }
@@ -191,10 +194,10 @@ impl<'de> Deserializer<'de> {
 
     fn parse_char(&mut self) -> Result<char> {
         check_delimiters!(self, CHAR_ID => Error::ExpectedChar, {
-                let c = self.input.chars().next();
-                self.input = &self.input[1..];
-                c.ok_or(Error::Eof)
-            }?
+                let c = self.input.chars().next().ok_or(Error::Eof)?;
+                self.input = &self.input[c.len_utf8()..];
+                c
+            }
         )
     }
 
@@ -202,8 +205,8 @@ impl<'de> Deserializer<'de> {
         check_delimiters!(self, STRING_ID => Error::ExpectedString);
 
         let len = self.parse_length()?;
-        match self.input.chars().nth(len) {
-            Some(DELIMITER_CHAR) => {
+        match self.input.as_bytes().get(len) {
+            Some(d) if (*d as char) == DELIMITER_CHAR => {
                 let string = &self.input[..len];
                 self.input = &self.input[len..];
                 Ok(string)
@@ -362,16 +365,16 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        // TODO
-        unimplemented!()
+        check_delimiters!(self, BYTES_ID => Error::ExpectedBytes);
+        Err(Error::Syntax)
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        // TODO
-        unimplemented!()
+        check_delimiters!(self, BYTES_ID => Error::ExpectedBytes);
+        Err(Error::Syntax)
     }
 
     // An absent optional is represented as the JSON `null` and a present
@@ -386,7 +389,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        if self.input.starts_with(NULL_ID) {
+        if self.input.starts_with(NONE_ID) {
             self.input = &self.input[1..];
             if self.input.starts_with(DELIMITER_CHAR) {
                 self.input = &self.input[1..];

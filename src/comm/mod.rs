@@ -14,13 +14,37 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_null() -> Result<()> {
+        let value : Option<usize> = None;
+
+        let string = to_string(&value)?;
+        let parsed = from_str::<Option<usize>>(&string)?;
+
+        assert!(parsed == value);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_uint() -> Result<()> {
+        let value: usize = 420;
+
+        let string = to_string(&value)?;
+        let parsed = from_str::<usize>(&string)?;
+
+        assert!(parsed == value);
+
+        Ok(())
+    }
+
+    #[test]
     fn test_int() -> Result<()> {
-        let int: usize = 420;
+        let value : isize = -420;
 
-        let string = to_string(&int)?;
-        let value = from_str::<usize>(&string)?;
+        let string = to_string(&value)?;
+        let parsed = from_str::<isize>(&string)?;
 
-        assert!(int == value);
+        assert!(parsed == value);
 
         Ok(())
     }

@@ -1,6 +1,7 @@
 pub const DELIMITER_CHAR: char = '\n';
 
 pub const NULL_ID: char = '_';
+pub const NONE_ID: char = '-';
 pub const BOOL_ID: char = '#';
 pub const UINT_ID: char = '!';
 pub const INT_ID: char = ':';

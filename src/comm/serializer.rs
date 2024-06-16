@@ -139,13 +139,18 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     // compactly.
     fn serialize_bytes(self, v: &[u8]) -> Result<()> {
         self.output.push(BYTES_ID);
+        self.output += &v.len().to_string();
+        self.output.push(DELIMITER_CHAR);
         self.output += unsafe { std::str::from_utf8_unchecked(v) };
+        self.output.push(DELIMITER_CHAR);
         Ok(())
     }
 
     // An absent optional is represented as the JSON `null`.
     fn serialize_none(self) -> Result<()> {
-        self.serialize_unit()
+        self.output.push(NONE_ID);
+        self.output.push(DELIMITER_CHAR);
+        Ok(())
     }
 
     // A present optional is represented as just the contained value. Note that
