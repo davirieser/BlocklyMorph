@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 type NodeId = u32;
 type NodePort = String;
-// Vector Clock to make sure that messages are executed in the correct order.
+// Sequence number to make sure that messages are executed in the correct order.
 type Clock = u32;
 
 #[derive(Serialize, Deserialize)]
