@@ -19,6 +19,7 @@ pub enum Error {
     SerdeError(String),
 
     Message(&'static str),
+    NotSupported(&'static str),
 
     // Zero or more variants that can be created directly by the Serializer and
     // Deserializer without going through `ser::Error` and `de::Error`. These
