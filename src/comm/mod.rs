@@ -1,3 +1,4 @@
+
 mod serializer;
 pub use serializer::{to_string, Serializer};
 
@@ -49,3 +50,4 @@ mod test {
         Ok(())
     }
 }
+
