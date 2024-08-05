@@ -7,14 +7,14 @@ use serde::{Deserialize, Serialize};
 
 type NodeId = u32;
 type NodePort = String;
-// Vector Clock to make sure that messages are executed in the correct order.
+// Sequence number to make sure that messages are executed in the correct order.
 type Clock = u32;
 
 #[derive(Serialize, Deserialize)]
 pub struct Message {
     sender: NodeId,
     receiver: NodeId,
-    // Vector Clock to make sure that messages are executed in the correct order.
+    // Sequence number to make sure that messages are executed in the correct order.
     clock: Clock,
     #[serde(skip_serializing_if = "Option::is_none")]
     in_reply_to: Option<Clock>,
@@ -67,7 +67,7 @@ pub enum Payload {
 pub struct Node {
     id: NodeId,
     status: NodeStatus,
-    // Used for keeping track of the vector clock
+    // Used for keeping track of the sequence number
     sync_status: SyncStatus,
     ports: Vec<NodePort>,
 }
